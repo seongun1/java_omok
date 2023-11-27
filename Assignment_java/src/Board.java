@@ -2,9 +2,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class Board implements Serializable {
+    private static final long serialVersionUID = 1L; // 직렬화를 위한 버전 UID
     private int boardXSize = 15;
     private int boardYSize = 15;
-    public int[][] boardMap = new int[boardXSize][boardYSize];
+    private int[][] boardMap = new int[boardXSize][boardYSize];
     private Player playerOne, playerTwo;
     private Player winner;
 
@@ -51,9 +52,9 @@ public class Board implements Serializable {
         int stoneColor = boardMap[x][y];
 
         if (checkWinDirection(x, y, stoneColor, 1, 0) ||
-            checkWinDirection(x, y, stoneColor, 0, 1) ||
-            checkWinDirection(x, y, stoneColor, 1, 1) ||
-            checkWinDirection(x, y, stoneColor, 1, -1)) {
+                checkWinDirection(x, y, stoneColor, 0, 1) ||
+                checkWinDirection(x, y, stoneColor, 1, 1) ||
+                checkWinDirection(x, y, stoneColor, 1, -1)) {
             winner = player;
             return true;
         }

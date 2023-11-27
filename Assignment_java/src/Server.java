@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.util.Scanner;
 
 public class Server {
     private static final int PORT = 12345;
@@ -28,60 +27,71 @@ public class Server {
             // 오목 보드 생성
             Board board = new Board(BOARD_SIZE);
 
-            // 두 클라이언트에게 보드 크기 전달
-            oneWrite.write(Integer.toString(BOARD_SIZE));
-            oneWrite.flush();
-            twoWrite.write(Integer.toString(BOARD_SIZE));
-            twoWrite.flush();
+            // 직렬화하여 보드 전달
+            ObjectOutputStream outToOne = new ObjectOutputStream(clientOne.getOutputStream());
+            outToOne.writeObject(board);
+            outToOne.flush();
+
+            ObjectOutputStream outToTwo = new ObjectOutputStream(clientTwo.getOutputStream());
+            outToTwo.writeObject(board);
+            outToTwo.flush();
 
             // 게임 시작
             Player playerOne = new Player("Player1", "Player1입니다.");
             Player playerTwo = new Player("Player2", "Player2입니다.");
-            Scanner scan = new Scanner (System.in);
-            int x,y;
+
             while (true) {
                 // 플레이어1의 차례
                 board.show();
                 String input1 = oneRead.readLine();
                 if (input1.equalsIgnoreCase("give up")) {
-                	System.out.println("플레이어 1이 항복하였습니다... 대전을 종료합니다.");
-                	break;
+                    System.out.println("플레이어 1이 항복하였습니다... 대전을 종료합니다.");
+                    break;
                 }
-                String [] result1 = input1.split(" ");
-                x = Integer.parseInt(result1[0]);
-                y = Integer.parseInt(result1[1]);
+                String[] result1 = input1.split(" ");
+                int x = Integer.parseInt(result1[0]);
+                int y = Integer.parseInt(result1[1]);
 
                 if (board.put(x, y, playerOne) && board.win(x, y, playerOne)) {
                     oneWrite.write("win");
+                    oneWrite.newLine();
                     oneWrite.flush();
                     twoWrite.write("lose");
+                    twoWrite.newLine();
                     twoWrite.flush();
                     break;
                 } else {
-                	board.put(x, y, playerOne);
-                	oneWrite.write(board.boardMapReturn());
-                	oneWrite.flush();
+                    board.put(x, y, playerOne);
+                    outToOne.writeObject(board);
+                    outToOne.flush();
                 }
 
                 // 플레이어2의 차례
                 board.show();
-                String Input2 = oneRead.readLine();
-                String [] result2 = Input2.split(" ");
+                String input2 = twoRead.readLine();
+                if (input2.equalsIgnoreCase("give up")) {
+                    System.out.println("플레이어 2가 항복하였습니다... 대전을 종료합니다.");
+                    break;
+                }
+                String[] result2 = input2.split(" ");
                 x = Integer.parseInt(result2[0]);
                 y = Integer.parseInt(result2[1]);
-                
+
                 if (board.put(x, y, playerTwo) && board.win(x, y, playerTwo)) {
-                	twoWrite.write("win");
-                	twoWrite.flush();
-                	oneWrite.write("lose");
-                	oneWrite.flush();
+                    twoWrite.write("win");
+                    twoWrite.newLine();
+                    twoWrite.flush();
+                    oneWrite.write("lose");
+                    oneWrite.newLine();
+                    oneWrite.flush();
                     break;
                 } else {
-                	board.put(x, y, playerTwo);
-                    twoWrite.write(board.boardMapReturn());
-                    twoWrite.flush();
+                    board.put(x, y, playerTwo);
+                    outToTwo.writeObject(board);
+                    outToTwo.flush();
                 }
             }
+
             // 연결 종료
             serverSocket.close();
             clientOne.close();
