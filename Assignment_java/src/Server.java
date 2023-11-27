@@ -19,61 +19,69 @@ public class Server {
             Socket clientTwo = serverSocket.accept();
             System.out.println("두 번째 클라이언트가 연결되었습니다.");
 
-            ObjectOutputStream outToOne = new ObjectOutputStream(clientOne.getOutputStream());
-            ObjectInputStream inFromOne = new ObjectInputStream(clientOne.getInputStream());
+            BufferedReader oneRead = new BufferedReader(new InputStreamReader(clientOne.getInputStream()));
+            BufferedWriter oneWrite = new BufferedWriter(new OutputStreamWriter(clientOne.getOutputStream()));
 
-            ObjectOutputStream outToTwo = new ObjectOutputStream(clientTwo.getOutputStream());
-            ObjectInputStream inFromTwo = new ObjectInputStream(clientTwo.getInputStream());
+            BufferedReader twoRead = new BufferedReader(new InputStreamReader(clientTwo.getInputStream()));
+            BufferedWriter twoWrite = new BufferedWriter(new OutputStreamWriter(clientTwo.getOutputStream()));
 
             // 오목 보드 생성
             Board board = new Board(BOARD_SIZE);
 
             // 두 클라이언트에게 보드 크기 전달
-            outToOne.writeInt(BOARD_SIZE);
-            outToOne.flush();
-            outToTwo.writeInt(BOARD_SIZE);
-            outToTwo.flush();
+            oneWrite.write(Integer.toString(BOARD_SIZE));
+            oneWrite.flush();
+            twoWrite.write(Integer.toString(BOARD_SIZE));
+            twoWrite.flush();
 
             // 게임 시작
             Player playerOne = new Player("Player1", "Player1입니다.");
             Player playerTwo = new Player("Player2", "Player2입니다.");
             Scanner scan = new Scanner (System.in);
-            int x = scan.nextInt();
-            int y = scan.nextInt();
+            int x,y;
             while (true) {
                 // 플레이어1의 차례
                 board.show();
-                x = inFromOne.readInt() - 1;
-                y = inFromOne.readInt() - 1;
+                String input1 = oneRead.readLine();
+                if (input1.equalsIgnoreCase("give up")) {
+                	System.out.println("플레이어 1이 항복하였습니다... 대전을 종료합니다.");
+                	break;
+                }
+                String [] result1 = input1.split(" ");
+                x = Integer.parseInt(result1[0]);
+                y = Integer.parseInt(result1[1]);
 
                 if (board.put(x, y, playerOne) && board.win(x, y, playerOne)) {
-                    outToOne.writeObject("win");
-                    outToOne.flush();
-                    outToTwo.writeObject("lose");
-                    outToTwo.flush();
+                    oneWrite.write("win");
+                    oneWrite.flush();
+                    twoWrite.write("lose");
+                    twoWrite.flush();
                     break;
                 } else {
-                    outToOne.writeObject(board.boardMapReturn());
-                    outToOne.flush();
+                	board.put(x, y, playerOne);
+                	oneWrite.write(board.boardMapReturn());
+                	oneWrite.flush();
                 }
 
                 // 플레이어2의 차례
                 board.show();
-                x = inFromTwo.readInt() - 1;
-                y = inFromTwo.readInt() - 1;
-
+                String Input2 = oneRead.readLine();
+                String [] result2 = Input2.split(" ");
+                x = Integer.parseInt(result2[0]);
+                y = Integer.parseInt(result2[1]);
+                
                 if (board.put(x, y, playerTwo) && board.win(x, y, playerTwo)) {
-                    outToTwo.writeObject("win");
-                    outToTwo.flush();
-                    outToOne.writeObject("lose");
-                    outToOne.flush();
+                	twoWrite.write("win");
+                	twoWrite.flush();
+                	oneWrite.write("lose");
+                	oneWrite.flush();
                     break;
                 } else {
-                    outToTwo.writeObject(board.boardMapReturn());
-                    outToTwo.flush();
+                	board.put(x, y, playerTwo);
+                    twoWrite.write(board.boardMapReturn());
+                    twoWrite.flush();
                 }
             }
-
             // 연결 종료
             serverSocket.close();
             clientOne.close();
