@@ -7,7 +7,7 @@ public class GameMain {
    public static void main(String[] args) {
       Player playerOne= new Player("È«±æµ¿","È«±æµ¿ÀÔ´Ï´Ù.");
       Player playerTwo= new Player("°í¸»¼÷","°í¸»¼÷ÀÔ´Ï´Ù.");
-      Board board = new Board();
+      Board board = new Board(15);
       playerSetting(playerOne, playerTwo);
       Scanner scanner= new Scanner(System.in);
       int x,y;
