@@ -25,7 +25,7 @@ class Board extends Canvas{ // 오목판 구현 클래스
    
    private PrintWriter write;
    
-   private Graphics gboard,gbuff; // 캔버스와 버퍼를 위한 그래픽스 객체
+   private Graphics gbuff; // 캔버스와 버퍼를 위한 그래픽스 객체
    
    Board(int size,int cell){ // 오목판의 생성자 (size=15,c=30)
       this.size = size; this.cell = cell;
@@ -243,7 +243,7 @@ public class Client extends Frame implements Runnable, ActionListener{
 
         private TextArea msgView=new TextArea("", 1,1,1);   // 메시지를 보여주는 영역
 
-        private TextField sendBox=new TextField("");         // 보낼 메시지
+        //private TextField sendBox=new TextField("");         // 보낼 메시지
 
         private TextField nameBox=new TextField();          // 사용자 이름 
 
@@ -266,7 +266,7 @@ public class Client extends Frame implements Runnable, ActionListener{
 
 
         // 각종 정보를 보여주는 레이블
-        private Label infoView=new Label("오목 게임 과제", 1);
+        private Label infoView=new Label("[오목 게임 과제]", 1);
 
         private Board board=new Board(15,30);      // 오목판 객체
 
@@ -302,32 +302,34 @@ public class Client extends Frame implements Runnable, ActionListener{
 
           Panel p=new Panel();   // Panel 1 (이름, 방 번호)
 
-          p.setLayout(new FlowLayout()); 
-          
-          nameBox.setColumns(17);
-          roomBox.setColumns(17);
+          p.setLayout(new GridLayout(3,3)); 
           
           
-          Label nameLabel = new Label("Name:");
-          Label roomLabel = new Label("RoomNumber:");
-          nameLabel.setBackground(new Color(178, 235, 244));
-          roomLabel.setBackground(new Color(178, 235, 244));
           
-          nameLabel.setPreferredSize(new Dimension(80, 20));
-          roomLabel.setPreferredSize(new Dimension(80,20));
           
-          p.add(nameLabel);
-          p.add(nameBox);
-          p.add(roomLabel);
-          p.add(roomBox);
+          p.add(new Label("이 름:",2)); p.add(nameBox);
+          p.add(new Label("방 번호:",2)); p.add(roomBox);
+          
+          //nameLabel.setBackground(new Color(178, 235, 244));
+          //roomLabel.setBackground(new Color(178, 235, 244));
+          
+          //nameLabel.setPreferredSize(new Dimension(80, 20));
+          //roomLabel.setPreferredSize(new Dimension(80,20));
+          
+          //p.add(nameLabel);
+          
+          //p.add(roomLabel);
+                    
+          p.add(enterButton);
+          p.add(exitButton);
+          enterButton.setEnabled(false);
+          
           
           enterButton.setPreferredSize(new Dimension(120, 20)); 
           exitButton.setPreferredSize(new Dimension(120, 20)); 
           
-          p.add(enterButton);
-          p.add(exitButton);
           
-         //exitButton.setEnabled(false);
+
 
           p.setBounds(500, 30, 250, 80);
           
@@ -362,7 +364,7 @@ public class Client extends Frame implements Runnable, ActionListener{
           add(p); add(p2); //add(p3);
           // 이벤트 리스너를 등록
 
-          sendBox.addActionListener(this);
+          //sendBox.addActionListener(this);
 
           enterButton.addActionListener(this);
 
@@ -388,8 +390,8 @@ public class Client extends Frame implements Runnable, ActionListener{
         // 컴포넌트들의 액션 이벤트 처리
 
         public void actionPerformed(ActionEvent ae){
-
-          if(ae.getSource()==sendBox){             // 메시지 입력 상자 클릭 시
+/*
+         if(ae.getSource()==sendBox){             // 메시지 입력 상자 클릭 시
             String msg=sendBox.getText();
 
             if(msg.length()==0)return;
@@ -403,9 +405,10 @@ public class Client extends Frame implements Runnable, ActionListener{
               sendBox.setText("");
 
             }catch(Exception ie){}
-
-          }
-          else if(ae.getSource()==enterButton){         // 입장하기 버튼 클릭 시
+            }
+*/
+          
+           if(ae.getSource()==enterButton){         // 입장하기 버튼 클릭 시
 
             try{
                
@@ -416,7 +419,6 @@ public class Client extends Frame implements Runnable, ActionListener{
                 return;
 
               }
-
                 writer.println("[ROOM]"+Integer.parseInt(roomBox.getText()));
 
                 msgView.setText("");
@@ -430,19 +432,13 @@ public class Client extends Frame implements Runnable, ActionListener{
           else if(ae.getSource()==exitButton){           // 대기실로 버튼 클릭 시
 
             try{
-
               goToWaitRoom();
-
               startButton.setEnabled(false);
-
               stopButton.setEnabled(false);
 
             }catch(Exception e){}
 
           }
-
-       
-
           else if(ae.getSource()==startButton){          // 시작 버튼 클릭 시
 
             try{
@@ -474,14 +470,13 @@ public class Client extends Frame implements Runnable, ActionListener{
 
           if(userName==null){
 
-            String name=nameBox.getText().trim();
+           String name=nameBox.getText().trim();
 
-            if(name.length()<=1 || name.length()>10){
+            if(name.length()<=0 || name.length()>10){
 
-              infoView.setText("2글자 와 10글자 사이의 이름을 입력해주세요");
+              infoView.setText("1글자 와 10글자 사이의 이름을 입력해주세요");
               nameBox.requestFocus();
               return;
-
             }
             userName=name;
 
@@ -491,13 +486,13 @@ public class Client extends Frame implements Runnable, ActionListener{
 
             nameBox.setEditable(false);
 
-          }  
+            
 
           msgView.setText("");
 
           writer.println("[ROOM]0");
 
-          infoView.setText("대기실에 입장하셨습니다.");
+          infoView.setText("대기실에 입장하였습니다.");
 
           roomBox.setText("0");
 
@@ -505,6 +500,7 @@ public class Client extends Frame implements Runnable, ActionListener{
 
           exitButton.setEnabled(false);
 
+        }
         }
         public void run(){
 
@@ -535,15 +531,10 @@ public class Client extends Frame implements Runnable, ActionListener{
                   exitButton.setEnabled(true);
 
                   infoView.setText(msg.substring(6)+"번 방에 입장하셨습니다.");
-
                 }
-                else infoView.setText("대기실에 입장하셨습니다.");
-
-       
+                else infoView.setText("대기실에 입장하였습니다.");
 
                 roomNumber=Integer.parseInt(msg.substring(6));     // 방 번호 지정
-
-       
 
                 if(board.isRunning()){                    // 게임이 진행중인 상태이면
 
@@ -573,14 +564,13 @@ public class Client extends Frame implements Runnable, ActionListener{
                 
                 playersInfo();                        // 인원수를 다시 계산하고 출력
 
-                msgView.append("["+msg.substring(6)+ "]님이 다른 방으로 입장하였습니다.\n");
+                msgView.append("["+msg.substring(6)+ "]님이 "
+                		+ "다른 방으로 입장하였습니다.\n");
 
                 if(roomNumber!=0)
                   endGame("상대가 나갔습니다.");
 
               }
-
-       
 
               else if(msg.startsWith("[DISCONNECT]")){     // 사용자 접속 종료
                 pList.remove(msg.substring(12));
@@ -668,13 +658,9 @@ public class Client extends Frame implements Runnable, ActionListener{
           pList.removeAll();
 
           StringTokenizer st=new StringTokenizer(msg, "\t");
-
           while(st.hasMoreElements())
-
             pList.add(st.nextToken());
-
           playersInfo();
-
         }
 
         private void connect(){                    // 연결되었을 경우 실행
@@ -683,7 +669,7 @@ public class Client extends Frame implements Runnable, ActionListener{
 
             msgView.append("서버에 연결을 요청합니다.\n");
 
-            socket=new Socket("localhost", 7777);
+            socket=new Socket("localhost", 12345);
 
             msgView.append("연결성공\n");
 

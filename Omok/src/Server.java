@@ -17,7 +17,8 @@ public class Server {
     			Socket socket = serverSocket.accept();
     			gomoku_Thread omok = new gomoku_Thread(socket);
     			omok.start();
-    			
+    			Gman.add(omok);
+    			System.out.println("접속자 수: " +Gman.size());
     		}
     }
     	catch(Exception e) {
@@ -42,15 +43,15 @@ public class Server {
     	gomoku_Thread(Socket socket){
     		this.socket=socket;
     	}
-    		Socket getSocket() {
-    			return socket;
-    		}
-    	boolean isReady() {
-    		return ready;
-    	}
+    	Socket getSocket() {
+    		return socket;
+   		}
     	int getRoomNumber() {
     		return roomNumber;
-    	}
+        }
+    	boolean isReady() {
+    		return ready;
+    	} 	
     	String getUserName() {
     		return userName;
     	}
@@ -58,7 +59,7 @@ public class Server {
     		try {
     			read = new BufferedReader(new InputStreamReader
     					(socket.getInputStream()));
-    			write = new PrintWriter(socket.getOutputStream());			
+    			write = new PrintWriter(socket.getOutputStream(),true);			
     		
     		String msg; // 클라이언트의 방향 (시작,종료,항복,...)
     		while ((msg=read.readLine()) !=null) {
@@ -67,34 +68,10 @@ public class Server {
     				userName = msg.substring(6);
     			}
     			
-    			if(msg.startsWith("[START]")) {
-    				ready = true;
-    				if(Gman.isReady(roomNumber)) {
-    					int a = 1;
-    					if (a==0) {
-    						write.println("[COLOR]BLACK");
-    						Gman.sendToOther(this,"[COLOR}white");
-    					}
-    					else {
-    						write.println("[COLOR]WHITE");
-    						Gman.sendToOther(this,"[COLOR]BLACK");
-    					}
-    				}
-    			}
-    			//게임 중지 -> 패배
-    			else if (msg.startsWith("[STOP]")) {
-    				ready = false;
-    			}
-    			// 승리 메세지
-    			else if (msg.startsWith("[WIN]")) {
-    				ready =false;
-    				write.println("이겼습니다!");
-    				Gman.sendToOther(this,"패배하였습니다.");
-    			}
-    			else if (msg.startsWith("[Room]")) {
+    			// 방 번호를 정하는 경우
+    			else if (msg.startsWith("[ROOM]")) {
     				int rn = Integer.parseInt(msg.substring(6));
     				if (!Gman.isFull(rn)) { // 방이 찬 상태(2명)가 아니면
-    					
     					
     					// 현재 방의 다른 사람에게 퇴장을 알림.
     					if (roomNumber != -1) {
@@ -106,7 +83,7 @@ public class Server {
     					write.println(msg); // 사용자에게 메세지를 그대로 전송해 입장가능 알림.
     					write.println(Gman.getNamesRoom(roomNumber)); // 사용자에게 새 방에 있는 사용자 이름 리스트를 전송
     					
-    					Gman.sendToOther(this,"[ENTER]" +userName);
+    					Gman.sendToOther(this,"[ENTER]"+userName);
     				}
     					else 
     						write.println("[FULL]"); // 사용자에게 방이 찼음을 알림
@@ -196,7 +173,6 @@ public class Server {
     			pw.println(msg);
     		}catch (Exception e) {}
     	}
-    	
     	
     	int getRoomNumber(int i) {
     		return getGT(i).getRoomNumber();
